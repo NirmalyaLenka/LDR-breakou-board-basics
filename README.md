@@ -34,7 +34,7 @@ DO     ──────►  GPIO 35  (Digital threshold trigger)
 
 ---
 
-## 🛠️ Setup & Installation
+##  Setup & Installation
 
 ### 1. Install Arduino IDE
 Download from [arduino.cc](https://www.arduino.cc/en/software)

@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LDR Wiring Guide — 15 Dev Boards</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f1a;
+    --bg2: #111827;
+    --bg3: #1a2235;
+    --card: #141c2e;
+    --card-hover: #1c2540;
+    --border: rgba(99,179,237,0.15);
+    --border-hover: rgba(99,179,237,0.4);
+    --accent: #3b82f6;
+    --accent2: #06b6d4;
+    --accent3: #a78bfa;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --pink: #ec4899;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow orbs */
+  .orb1 {
+    position: fixed; top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  .orb2 {
+    position: fixed; bottom: -200px; left: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(167,139,250,0.07) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 1; }
+
+  /* ── Header ── */
+  header {
+    padding: 3rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2.5rem;
+  }
+
+  .header-inner { display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem; flex-wrap: wrap; }
+
+  .header-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .header-tag::before {
+    content: '';
+    display: inline-block;
+    width: 24px; height: 1px;
+    background: var(--accent2);
+  }
+
+  h1 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  h1 span { color: var(--accent); }
+
+  .header-meta {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text3);
+    text-align: right;
+  }
+  .header-meta strong { color: var(--accent2); font-weight: 600; }
+
+  /* ── Search + Filters ── */
+  .controls {
+    display: flex; gap: 1rem; align-items: center;
+    margin-bottom: 2rem; flex-wrap: wrap;
+  }
+
+  .search-wrap {
+    position: relative; flex: 1; min-width: 220px;
+  }
+  .search-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    width: 16px; height: 16px; color: var(--text3);
+  }
+  #search {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 10px 14px 10px 38px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #search::placeholder { color: var(--text3); }
+  #search:focus { border-color: var(--accent); }
+
+  .filter-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .filter-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text2);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover { border-color: var(--border-hover); color: var(--text); }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* ── Board Grid ── */
+  .board-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .board-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.25s;
+    overflow: hidden;
+    position: relative;
+  }
+  .board-card:hover {
+    border-color: var(--border-hover);
+    background: var(--card-hover);
+    transform: translateY(-2px);
+  }
+  .board-card.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 8px 32px rgba(59,130,246,0.15);
+  }
+
+  .card-top {
+    padding: 1.25rem 1.25rem 1rem;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem;
+  }
+
+  .board-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+
+  .board-info { flex: 1; min-width: 0; }
+  .board-name {
+    font-size: 14px; font-weight: 700;
+    color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .board-mcu {
+    font-family: var(--mono);
+    font-size: 11px; color: var(--text3);
+    margin-top: 2px;
+  }
+
+  .board-badge {
+    font-family: var(--mono);
+    font-size: 10px; font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  .card-pins {
+    padding: 0 1.25rem 1rem;
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .pin-chip {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    border: 1px solid;
+  }
+  .pin-vcc  { background: rgba(239,68,68,0.1);  border-color: rgba(239,68,68,0.3);  color: #fca5a5; }
+  .pin-gnd  { background: rgba(100,116,139,0.1); border-color: rgba(100,116,139,0.3); color: #94a3b8; }
+  .pin-ao   { background: rgba(59,130,246,0.1);  border-color: rgba(59,130,246,0.3);  color: #93c5fd; }
+  .pin-do   { background: rgba(16,185,129,0.1);  border-color: rgba(16,185,129,0.3);  color: #6ee7b7; }
+
+  /* ── Detail Panel ── */
+  #detail-panel {
+    display: none;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 3rem;
+    animation: slideDown 0.3s ease;
+  }
+  #detail-panel.visible { display: block; }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .detail-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  }
+
+  .detail-title-group { display: flex; align-items: center; gap: 1rem; }
+  .detail-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
+  .detail-title { font-size: 22px; font-weight: 800; }
+  .detail-subtitle { font-family: var(--mono); font-size: 12px; color: var(--text3); margin-top: 3px; }
+
+  .close-btn {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text2);
+    font-family: var(--mono); font-size: 12px;
+    padding: 8px 14px; cursor: pointer; transition: all 0.2s;
+  }
+  .close-btn:hover { background: var(--card); color: var(--text); }
+
+  .detail-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  @media (max-width: 900px) { .detail-body { grid-template-columns: 1fr; } }
+
+  .detail-section {
+    padding: 1.75rem 2rem;
+    border-right: 1px solid var(--border);
+  }
+  .detail-section:last-child { border-right: none; }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 1.25rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1; height: 1px;
+    background: var(--border);
+  }
+
+  /* Wiring table */
+  .wiring-table { width: 100%; border-collapse: collapse; }
+  .wiring-table th {
+    font-family: var(--mono);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+    text-align: left;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .wiring-table td {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    vertical-align: middle;
+  }
+  .wire-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+  .wire-red   { background: #ef4444; }
+  .wire-black { background: #64748b; }
+  .wire-blue  { background: #3b82f6; }
+  .wire-green { background: #10b981; }
+
+  .arrow-cell { color: var(--text3); text-align: center; font-size: 14px; }
+  .pin-cell { color: var(--accent2); font-weight: 600; }
+  .ldr-cell { color: var(--text2); }
+  .note-cell { color: var(--text3); font-size: 10px; }
+
+  /* Code block */
+  .code-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 0;
+  }
+  .code-header {
+    background: var(--bg3);
+    padding: 8px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .code-lang {
+    font-family: var(--mono); font-size: 10px;
+    font-weight: 700; letter-spacing: 0.1em;
+    color: var(--accent2);
+  }
+  .copy-btn {
+    font-family: var(--mono); font-size: 10px;
+    background: none; border: 1px solid var(--border);
+    border-radius: 5px; color: var(--text3);
+    padding: 3px 10px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  pre {
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--text2);
+    max-height: 340px;
+    overflow-y: auto;
+  }
+  pre .c   { color: var(--text3); }
+  pre .kw  { color: #c084fc; }
+  pre .num { color: #fb923c; }
+  pre .str { color: #86efac; }
+  pre .fn  { color: #67e8f9; }
+  pre .def { color: #fbbf24; }
+
+  /* Spec chips */
+  .spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .spec-item {
+    background: var(--bg3);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .spec-key { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-bottom: 3px; }
+  .spec-val { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text); }
+
+  /* Notes */
+  .note-box {
+    background: rgba(245,158,11,0.07);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #fcd34d;
+    line-height: 1.6;
+    margin-top: 1rem;
+  }
+  .note-box::before { content: '⚠ '; }
+
+  /* Count bar */
+  .stats-bar {
+    display: flex; gap: 2rem; align-items: center;
+    padding: 1rem 2rem;
+    background: var(--bg3);
+    border-top: 1px solid var(--border);
+    font-family: var(--mono); font-size: 12px;
+    color: var(--text3);
+  }
+  .stats-bar strong { color: var(--text); }
+
+  /* Scrollbars */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+  .no-results {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 3rem;
+    font-family: var(--mono);
+    color: var(--text3);
+  }
+</style>
+</head>
+<body>
+<div class="orb1"></div>
+<div class="orb2"></div>
+
+<div class="container">
+  <header>
+    <div class="header-inner">
+      <div>
+        <div class="header-tag">LDR Breakout Module</div>
+        <h1>Wiring <span>Reference</span><br>for 15 Dev Boards</h1>
+      </div>
+      <div class="header-meta">
+        <div>ADC Range: <strong>0 – 4095</strong></div>
+        <div>Vref: <strong>3.3 V / 5 V</strong></div>
+        <div>Protocol: <strong>Analog + Digital</strong></div>
+        <div style="margin-top:6px; color: var(--text3);">Click any board to view code</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <svg class="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="text" id="search" placeholder="Search boards, MCUs…">
+    </div>
+    <div class="filter-btns">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="3.3v">3.3V</button>
+      <button class="filter-btn" data-filter="5v">5V</button>
+      <button class="filter-btn" data-filter="arm">ARM</button>
+      <button class="filter-btn" data-filter="avr">AVR</button>
+      <button class="filter-btn" data-filter="xtensa">Xtensa</button>
+      <button class="filter-btn" data-filter="rp2040">RP2040</button>
+    </div>
+  </div>
+
+  <div id="detail-panel"></div>
+
+  <div class="board-grid" id="board-grid"></div>
+
+  <div class="stats-bar" id="stats-bar">
+    Showing <strong id="count">15</strong> of 15 boards
+  </div>
+</div>
+
+<script>
+const boards = [
+  {
+    id: 'esp32',
+    name: 'ESP32 DevKit V1',
+    mcu: 'Xtensa LX6 240 MHz',
+    category: ['3.3v','xtensa'],
+    icon: '🔵', iconBg: 'rgba(59,130,246,0.15)',
+    badge: 'WiFi+BT', badgeBg: 'rgba(59,130,246,0.15)', badgeColor: '#93c5fd',
+    vref: '3.3V', adc: '12-bit (0–4095)',
+    vcc: '3.3V', gnd: 'GND', ao: 'GPIO 34', doPin: 'GPIO 35',
+    note: 'GPIO 34 & 35 are input-only. Do NOT use 3.3V pins as output. No analogWrite on input-only pins.',
+    specs: { Core: 'Xtensa LX6', Flash: '4MB', SRAM: '520KB', ADC: '12-bit', Pins: '38' },
+    code: `// ESP32 DevKit V1 — LDR Breakout
+#define LDR_AO  34   // Analog (input-only pin)
+#define LDR_DO  35   // Digital (input-only pin)
+
+void setup() {
+  Serial.begin(115200);
+  analogReadResolution(12);   // 0–4095
+  pinMode(LDR_DO, INPUT);
+}
+
+void loop() {
+  int raw      = analogRead(LDR_AO);
+  float volt   = raw / 4095.0 * 3.3;
+  int pct      = map(raw, 0, 4095, 100, 0);
+  bool isDark  = digitalRead(LDR_DO);
+
+  Serial.printf("ADC: %4d | %.3fV | %3d%% | %s\\n",
+    raw, volt, pct, isDark ? "DARK" : "BRIGHT");
+  delay(1000);
+}`
+  },
+  {
+    id: 'uno',
+    name: 'Arduino Uno R3',
+    mcu: 'ATmega328P 16 MHz',
+    category: ['5v','avr'],
+    icon: '🟢', iconBg: 'rgba(16,185,129,0.15)',
+    badge: '5V AVR', badgeBg: 'rgba(16,185,129,0.15)', badgeColor: '#6ee7b7',
+    vref: '5V', adc: '10-bit (0–1023)',
+    vcc: '5V', gnd: 'GND', ao: 'A0', doPin: 'D2',
+    note: '5V logic! LDR module must support 5V. AO → A0 (10-bit ADC). DO → D2 (digital interrupt capable).',
+    specs: { Core: 'AVR ATmega328P', Flash: '32KB', SRAM: '2KB', ADC: '10-bit', Pins: '14+6A' },
+    code: `// Arduino Uno R3 — LDR Breakout
+const int LDR_AO = A0;  // Analog pin
+const int LDR_DO = 2;   // Digital pin
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(LDR_DO, INPUT);
+}
+
+void loop() {
+  int raw     = analogRead(LDR_AO);   // 0–1023
+  float volt  = raw / 1023.0 * 5.0;
+  int pct     = map(raw, 0, 1023, 100, 0);
+  bool isDark = digitalRead(LDR_DO);
+
+  Serial.print("ADC: "); Serial.print(raw);
+  Serial.print(" | V: "); Serial.print(volt,3);
+  Serial.print(" | %: "); Serial.print(pct);
+  Serial.println(isDark ? " | DARK" : " | BRIGHT");
+  delay(1000);
+}`
+  },
+  {
+    id: 'nano',
+    name: 'Arduino Nano',
+    mcu: 'ATmega328P 16 MHz',
+    category: ['5v','avr'],
+    icon: '🟡', iconBg: 'rgba(245,158,11,0.15)',
+    badge: 'Compact', badgeBg: 'rgba(245,158,11,0.15)', badgeColor: '#fcd34d',
+    vref: '5V', adc: '10-bit (0–1023)',
+    vcc: '5V', gnd: 'GND', ao: 'A0', doPin: 'D4',
+    note: 'Same pinout as Uno. Mini-B USB. Same 328P core. A0–A7 available.',
+    specs: { Core: 'AVR ATmega328P', Flash: '32KB', SRAM: '2KB', ADC: '10-bit', Pins: '22' },
+    code: `// Arduino Nano — LDR Breakout
+const int LDR_AO = A0;
+const int LDR_DO = 4;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(LDR_DO, INPUT);
+}
+
+void loop() {
+  int raw     = analogRead(LDR_AO);
+  float volt  = raw / 1023.0 * 5.0;
+  int pct     = map(raw, 0, 1023, 100, 0);
+  bool isDark = digitalRead(LDR_DO);
+
+  Serial.print(raw); Serial.print(",");
+  Serial.print(volt,3); Serial.print(",");
+  Serial.println(isDark ? "DARK" : "BRIGHT");
+  delay(500);
+}`
+  },
+  {
+    id: 'mega',
+    name: 'Arduino Mega 2560',
+    mcu: 'ATmega2560 16 MHz',
+    category: ['5v','avr'],
+    icon: '🔴', iconBg: 'rgba(239,68,68,0.15)',
+    badge: '54 Digital', badgeBg: 'rgba(239,68,68,0.15)', badgeColor: '#fca5a5',
+    vref: '5V', adc: '10-bit (0–1023)',
+    vcc: '5V', gnd: 'GND', ao: 'A0', doPin: 'D22',
+    note: '16 analog inputs available (A0–A15). Plenty of digital pins. 5V logic.',
+    specs: { Core: 'AVR ATmega2560', Flash: '256KB', SRAM: '8KB', ADC: '10-bit', Pins: '54+16A' },
+    code: `// Arduino Mega 2560 — LDR Breakout
+const int LDR_AO = A0;   // 16 analog pins available
+const int LDR_DO = 22;   // Many digital pins
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LDR_DO, INPUT);
+}
+
+void loop() {
+  int raw     = analogRead(LDR_AO);   // 0–1023
+  float volt  = raw / 1023.0 * 5.0;
+  int pct     = map(raw, 0, 1023, 100, 0);
+  bool isDark = digitalRead(LDR_DO);
+
+  Serial.print("RAW:"); Serial.print(raw);
+  Serial.print(" VOLT:"); Serial.print(volt,3);
+  Serial.print("V PCT:"); Serial.print(pct);
+  Serial.println(isDark ? "% DARK" : "% BRIGHT");
+  delay(1000);
+}`
+  },
+  {
+    id: 'esp8266',
+    name: 'NodeMCU ESP8266',
+    mcu: 'Xtensa L106 80 MHz',
+    category: ['3.3v','xtensa'],
+    icon: '🌐', iconBg: 'rgba(6,182,212,0.15)',
+    badge: 'WiFi', badgeBg: 'rgba(6,182,212,0.15)', badgeColor: '#67e8f9',
+    vref: '3.3V', adc: '10-bit (0–1023)',
+    vcc: '3.3V', gnd: 'GND', ao: 'A0', doPin: 'D5',
+    note: 'Only ONE analog pin (A0) — max input 1.0V (internal divider). DO → D5 (GPIO 14). Use 3.3V only!',
+    specs: { Core: 'Xtensa L106', Flash: '4MB', SRAM: '80KB', ADC: '10-bit (1 ch)', Pins: '11' },
+    code: `// NodeMCU ESP8266 — LDR Breakout
+// IMPORTANT: A0 max = 1.0V (on-board voltage divider)
+// LDR module AO → A0 is fine; output is 0–1V range
+const int LDR_AO = A0;   // Only analog pin
+const int LDR_DO = D5;   // GPIO 14
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LDR_DO, INPUT);
+}
+
+void loop() {
+  int raw     = analogRead(LDR_AO);   // 0–1023
+  // ESP8266 A0 = 0–1.0V range
+  float volt  = raw / 1023.0 * 1.0;
+  int pct     = map(raw, 0, 1023, 100, 0);
+  bool isDark = digitalRead(LDR_DO);
+
+  Serial.printf("ADC:%d V:%.3f%%:%d %s\\n",
+    raw, volt, pct, isDark ? "DARK" : "BRIGHT");
+  delay(1000);
+}`
+  },
+  {
+    id: 'rp2040',
+    name: 'Raspberry Pi Pico',
+    mcu: 'RP2040 Dual ARM Cortex-M0+',
+    category: ['3.3v','rp2040','arm'],
+    icon: '🍓', iconBg: 'rgba(236,72,153,0.15)',
+    badge: 'RP2040', badgeBg: 'rgba(236,72,153,0.15)', badgeColor: '#f9a8d4',
+    vref: '3.3V', adc: '12-bit (0–4095)',
+    vcc: '3.3V', gnd: 'GND', ao: 'GP26 (ADC0)', doPin: 'GP16',
+    note: 'ADC pins: GP26, GP27, GP28 only. 3.3V logic. MicroPython or C/C++ SDK.',
+    specs: { Core: 'Dual M0+ 133MHz', Flash: '2MB', SRAM: '264KB', ADC: '12-bit', Pins: '26' },
+    code: `// Raspberry Pi Pico — LDR (MicroPython)
+from machine import ADC, Pin
+import time
+
+ldr_ao = ADC(26)          # GP26 = ADC0
+ldr_do = Pin(16, Pin.IN)  # Digital output
+
+while True:
+    raw  = ldr_ao.read_u16()        # 0–65535
+    raw12 = raw >> 4                 # scale to 12-bit 0–4095
+    volt  = raw / 65535 * 3.3
+    pct   = int((1 - raw/65535) * 100)
+    dark  = ldr_do.value()
+
+    print(f"ADC:{raw12:4d} V:{volt:.3f} %:{pct:3d} {'DARK' if dark else 'BRIGHT'}")
+    time.sleep(1)`
+  },
+  {
+    id: 'stm32',
+    name: 'STM32 Blue Pill',
+    mcu: 'STM32F103C8 72 MHz',
+    category: ['3.3v','arm'],
+    icon: '💙', iconBg: 'rgba(59,130,246,0.15)',
+    badge: 'ARM M3', badgeBg: 'rgba(59,130,246,0.15)', badgeColor: '#93c5fd',
+    vref: '3.3V', adc: '12-bit (0–4095)',
+    vcc: '3.3V', gnd: 'GND', ao: 'PA0', doPin: 'PB0',
+    note: '3.3V I/O only! 5V tolerant pins marked on board. PA0–PB1 have ADC. Use STM32duino or STM32CubeIDE.',
+    specs: { Core: 'ARM Cortex-M3', Flash: '64KB', SRAM: '20KB', ADC: '12-bit', Pins: '32' },
+    code: `// STM32 Blue Pill — LDR Breakout (STM32duino)
+const int LDR_AO = PA0;   // ADC0
+const int LDR_DO = PB0;   // Digital input
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LDR_AO, INPUT_ANALOG);
+  pinMode(LDR_DO, INPUT);
+  analogReadResolution(12);  // 12-bit = 0–4095
+}
+
+void loop() {
+  int raw     = analogRead(LDR_AO);   // 0–4095
+  float volt  = raw / 4095.0 * 3.3;
+  int pct     = map(raw, 0, 4095, 100, 0);
+  bool isDark = digitalRead(LDR_DO);
+
+  Serial.printf("ADC:%4d V:%.3f%%:%3d %s\\n",
+    raw, volt, pct, isDark ? "DARK" : "BRIGHT");
+  delay(1000);
+}`
+  },
+  {
+    id: 'due',
+    name: 'Arduino Due',
+    mcu: 'AT91SAM3X8E 84 MHz',
+    category: ['3.3v','arm'],
+    icon: '🔷', iconBg: 'rgba(167,139,250,0.15)',
+    badge: 'ARM M3', badgeBg: 'rgba(167,139,250,0.15)', badgeColor: '#c4b5fd',
+    vref: '3.3V', adc: '12-bit (0–4095)',
+    vcc: '3.3V', gnd: 'GND', ao: 'A0', doPin: 'D22',
+    note: '3.3V I/O — NOT 5V tolerant! Applying 5V will damage the board. 12-bit ADC natively.',
+    specs: { Core: 'ARM Cortex-M3', Flash: '512KB', SRAM: '96KB', ADC: '12-bit', Pins: '54+12A' },
+    code: `// Arduino Due — LDR Breakout
+// WARNING: 3.3V I/O ONLY — not 5V tolerant!
+const int LDR_AO = A0;
+const int LDR_DO = 22;
+
+void setup() {
+  Serial.begin(115200);
+  analogReadResolution(12);   // 0–4095
+  pinMode(LDR_DO, INPUT);
+}
+
+void loop() {
+  int raw     = analogRead(LDR_AO);   // 0–4095
+  float volt  = raw / 4095.0 * 3.3;
+  int pct     = map(raw, 0, 4095, 100, 0);
+  bool isDark = digitalRead(LDR_DO);
+
+  Serial.print("ADC:"); Serial.print(raw);
+  Serial.print(" V:"); Serial.print(volt,3);
+  Serial.print("V %:"); Serial.print(pct);
+  Serial.println(isDark ? " DARK" : " BRIGHT");
+  delay(1000);
+}`
+  },
+  {
+    id: 'esp32s3',
+    name: 'ESP32-S3',
+    mcu: 'Xtensa LX7 240 MHz',
+    category: ['3.3v','xtensa'],
+    icon: '🟣', iconBg: 'rgba(167,139,250,0.15)',
+    badge: 'WiFi+BT5', badgeBg: 'rgba(167,139,250,0.15)', badgeColor: '#c4b5fd',
+    vref: '3.3V', adc: '12-bit (0–4095)',
+    vcc: '3.3V', gnd: 'GND', ao: 'GPIO 4', doPin: 'GPIO 5',
+    note: 'GPIO 1–10 support ADC1; GPIO 11–20 support ADC2 (may conflict with WiFi). Prefer ADC1 pins.',
+    specs: { Core: 'Xtensa LX7', Flash: '8MB', SRAM: '512KB', ADC: '12-bit', Pins: '45' },
+    code: `// ESP32-S3 — LDR Breakout
+#define LDR_AO  4   // ADC1 channel
+#define LDR_DO  5   // Digital input
+
+void setup() {
+  Serial.begin(115200);
+  analogReadResolution(12);
+  analogSetAttenuation(ADC_11db);  // Full 3.3V range
+  pinMode(LDR_DO, INPUT);
+}
+
+void loop() {
+  int raw     = analogRead(LDR_AO);   // 0–4095
+  float volt  = raw / 4095.0 * 3.3;
+  int pct     = map(raw, 0, 4095, 100, 0);
+  bool isDark = digitalRead(LDR_DO);
+
+  Serial.printf("ADC:%4d V:%.3fV %%:%3d %s\\n",
+    raw, volt, pct, isDark ? "DARK" : "BRIGHT");
+  delay(1000);
+}`
+  },
+  {
+    id: 'teensy',
+    name: 'Teensy 4.0',
+    mcu: 'ARM Cortex-M7 600 MHz',
+    category: ['3.3v','arm'],
+    icon: '⚡', iconBg: 'rgba(245,158,11,0.15)',
+    badge: '600 MHz', badgeBg: 'rgba(245,158,11,0.15)', badgeColor: '#fcd34d',
+    vref: '3.3V', adc: '10-bit default (12-bit capable)',
+    vcc: '3.3V', gnd: 'GND', ao: 'A0 (pin 14)', doPin: 'Pin 0',
+    note: 'Fastest Arduino-compatible board. ADC resolution up to 12-bit. All pins 3.3V only.',
+    specs: { Core: 'ARM Cortex-M7', Flash: '2MB', SRAM: '1MB', ADC: '10/12-bit', Pins: '40' },
+    code: `// Teensy 4.0 — LDR Breakout
+const int LDR_AO = A0;   // Pin 14 = A0
+const int LDR_DO = 0;    // Digital pin 0
+
+void setup() {
+  Serial.begin(115200);
+  analogReadResolution(12);   // Set to 12-bit (0–4095)
+  pinMode(LDR_DO, INPUT);
+}
+
+void loop() {
+  int raw     = analogRead(LDR_AO);   // 0–4095
+  float volt  = raw / 4095.0 * 3.3;
+  int pct     = map(raw, 0, 4095, 100, 0);
+  bool isDark = digitalRead(LDR_DO);
+
+  Serial.printf("ADC:%4d  V:%.3f  %%:%3d  %s\\n",
+    raw, volt, pct, isDark ? "DARK" : "BRIGHT");
+  delay(500);
+}`
+  },
+  {
+    id: 'mkr',
+    name: 'Arduino MKR WiFi 1010',
+    mcu: 'SAMD21 Cortex-M0+ 48 MHz',
+    category: ['3.3v','arm'],
+    icon: '📡', iconBg: 'rgba(16,185,129,0.15)',
+    badge: 'WiFi+BLE', badgeBg: 'rgba(16,185,129,0.15)', badgeColor: '#6ee7b7',
+    vref: '3.3V', adc: '12-bit (0–4095)',
+    vcc: 'VCC (3.3V)', gnd: 'GND', ao: 'A1', doPin: 'D0',
+    note: '3.3V I/O only! A0 is also DAC capable. Use A1 for LDR to keep A0 free.',
+    specs: { Core: 'SAMD21 M0+', Flash: '256KB', SRAM: '32KB', ADC: '12-bit', Pins: '22' },
+    code: `// Arduino MKR WiFi 1010 — LDR Breakout
+const int LDR_AO = A1;   // A0 reserved for DAC
+const int LDR_DO = 0;    // Digital pin
+
+void setup() {
+  Serial.begin(115200);
+  analogReadResolution(12);   // SAMD21 supports 12-bit
+  pinMode(LDR_DO, INPUT);
+}
+
+void loop() {
+  int raw     = analogRead(LDR_AO);   // 0–4095
+  float volt  = raw / 4095.0 * 3.3;
+  int pct     = map(raw, 0, 4095, 100, 0);
+  bool isDark = digitalRead(LDR_DO);
+
+  Serial.print("LDR: "); Serial.print(raw);
+  Serial.print(" | "); Serial.print(volt,3);
+  Serial.print("V | "); Serial.print(pct);
+  Serial.println(isDark ? "% [DARK]" : "% [BRIGHT]");
+  delay(1000);
+}`
+  },
+  {
+    id: 'attiny',
+    name: 'ATtiny85 / Digispark',
+    mcu: 'ATtiny85 16.5 MHz',
+    category: ['5v','avr'],
+    icon: '🟤', iconBg: 'rgba(120,53,15,0.3)',
+    badge: 'Tiny', badgeBg: 'rgba(120,53,15,0.2)', badgeColor: '#d97706',
+    vref: '5V', adc: '10-bit (0–1023)',
+    vcc: '5V', gnd: 'GND', ao: 'P2 (ADC1)', doPin: 'P0',
+    note: 'Only 5 usable GPIO! ADC on P2(ADC1) and P3(ADC3). Very limited RAM (512B). No hardware Serial — use SoftSerial or USB HID.',
+    specs: { Core: 'AVR ATtiny85', Flash: '8KB', SRAM: '512B', ADC: '10-bit', Pins: '5' },
+    code: `// ATtiny85 / Digispark — LDR Breakout
+// No hardware Serial! Use USB CDC or blink LED
+#include <DigiUSB.h>
+
+const int LDR_AO = 1;   // P2 = ADC1 (physical pin 7)
+const int LDR_DO = 0;   // P0
+
+void setup() {
+  DigiUSB.begin();
+  pinMode(LDR_DO, INPUT);
+}
+
+void loop() {
+  int raw    = analogRead(LDR_AO);   // 0–1023
+  int pct    = map(raw, 0, 1023, 100, 0);
+  bool dark  = digitalRead(LDR_DO);
+
+  DigiUSB.print("ADC:"); DigiUSB.print(raw);
+  DigiUSB.print(" %:"); DigiUSB.print(pct);
+  DigiUSB.println(dark ? " DARK" : " BRIGHT");
+  DigiUSB.delay(1000);
+}`
+  },
+  {
+    id: 'portenta',
+    name: 'Arduino Portenta H7',
+    mcu: 'STM32H747 Dual M7+M4',
+    category: ['3.3v','arm'],
+    icon: '🏆', iconBg: 'rgba(245,158,11,0.15)',
+    badge: 'Industrial', badgeBg: 'rgba(245,158,11,0.15)', badgeColor: '#fcd34d',
+    vref: '3.3V', adc: '16-bit capable',
+    vcc: '3.3V', gnd: 'GND', ao: 'A0', doPin: 'D0',
+    note: 'Industrial-grade. 16-bit ADC on STM32H7. MKR shield compatible. Vision shield available. Dual-core M7+M4.',
+    specs: { Core: 'Dual M7+M4 480MHz', Flash: '16MB', SRAM: '8MB', ADC: '16-bit', Pins: '80' },
+    code: `// Arduino Portenta H7 — LDR Breakout
+const int LDR_AO = A0;
+const int LDR_DO = D0;
+
+void setup() {
+  Serial.begin(115200);
+  analogReadResolution(16);   // 16-bit! 0–65535
+  pinMode(LDR_DO, INPUT);
+}
+
+void loop() {
+  int raw     = analogRead(LDR_AO);   // 0–65535
+  float volt  = raw / 65535.0 * 3.3;
+  int pct     = map(raw, 0, 65535, 100, 0);
+  bool isDark = digitalRead(LDR_DO);
+
+  Serial.printf("ADC16: %5d | V: %.4f | %%: %3d | %s\\n",
+    raw, volt, pct, isDark ? "DARK" : "BRIGHT");
+  delay(1000);
+}`
+  },
+  {
+    id: 'micro',
+    name: 'Arduino Micro',
+    mcu: 'ATmega32U4 16 MHz',
+    category: ['5v','avr'],
+    icon: '🔌', iconBg: 'rgba(99,102,241,0.15)',
+    badge: 'USB HID', badgeBg: 'rgba(99,102,241,0.15)', badgeColor: '#a5b4fc',
+    vref: '5V', adc: '10-bit (0–1023)',
+    vcc: '5V', gnd: 'GND', ao: 'A0', doPin: 'D4',
+    note: 'ATmega32U4 has native USB. Can act as keyboard/mouse. Serial1 for hardware UART, Serial for USB CDC.',
+    specs: { Core: 'AVR ATmega32U4', Flash: '32KB', SRAM: '2.5KB', ADC: '10-bit', Pins: '20' },
+    code: `// Arduino Micro — LDR Breakout (ATmega32U4)
+const int LDR_AO = A0;
+const int LDR_DO = 4;
+
+void setup() {
+  Serial.begin(9600);   // USB CDC serial
+  while (!Serial);      // Wait for USB
+  pinMode(LDR_DO, INPUT);
+}
+
+void loop() {
+  int raw     = analogRead(LDR_AO);   // 0–1023
+  float volt  = raw / 1023.0 * 5.0;
+  int pct     = map(raw, 0, 1023, 100, 0);
+  bool isDark = digitalRead(LDR_DO);
+
+  Serial.print("ADC:"); Serial.print(raw);
+  Serial.print(" V:"); Serial.print(volt,3);
+  Serial.println(isDark ? " DARK" : " BRIGHT");
+  delay(1000);
+}`
+  },
+  {
+    id: 'esp32c3',
+    name: 'ESP32-C3 SuperMini',
+    mcu: 'RISC-V 160 MHz',
+    category: ['3.3v','xtensa'],
+    icon: '🟠', iconBg: 'rgba(249,115,22,0.15)',
+    badge: 'RISC-V', badgeBg: 'rgba(249,115,22,0.15)', badgeColor: '#fdba74',
+    vref: '3.3V', adc: '12-bit (0–4095)',
+    vcc: '3.3V', gnd: 'GND', ao: 'GPIO 0', doPin: 'GPIO 1',
+    note: 'RISC-V core (not Xtensa). GPIO 0–4 support ADC. GPIO 5 is strapping pin — avoid at boot.',
+    specs: { Core: 'RISC-V 160MHz', Flash: '4MB', SRAM: '400KB', ADC: '12-bit', Pins: '11' },
+    code: `// ESP32-C3 SuperMini — LDR Breakout
+#define LDR_AO  0   // GPIO 0 = ADC1_CH0
+#define LDR_DO  1   // GPIO 1 = digital
+
+void setup() {
+  Serial.begin(115200);
+  analogReadResolution(12);
+  analogSetAttenuation(ADC_11db);   // 0–3.3V range
+  pinMode(LDR_DO, INPUT);
+}
+
+void loop() {
+  int raw     = analogRead(LDR_AO);   // 0–4095
+  float volt  = raw / 4095.0 * 3.3;
+  int pct     = map(raw, 0, 4095, 100, 0);
+  bool isDark = digitalRead(LDR_DO);
+
+  Serial.printf("ADC:%d V:%.3fV %%:%d %s\\n",
+    raw, volt, pct, isDark ? "DARK" : "BRIGHT");
+  delay(1000);
+}`
+  }
+];
+
+let activeId = null;
+let activeFilter = 'all';
+
+function getCondition(board) {
+  return [
+    `<span class="pin-chip pin-vcc">VCC → ${board.vcc}</span>`,
+    `<span class="pin-chip pin-gnd">GND → GND</span>`,
+    `<span class="pin-chip pin-ao">AO → ${board.ao}</span>`,
+    `<span class="pin-chip pin-do">DO → ${board.doPin}</span>`,
+  ].join('');
+}
+
+function renderCards(list) {
+  const grid = document.getElementById('board-grid');
+  document.getElementById('count').textContent = list.length;
+  if (!list.length) {
+    grid.innerHTML = '<div class="no-results">No boards match your search.</div>';
+    return;
+  }
+  grid.innerHTML = list.map(b => `
+    <div class="board-card${activeId === b.id ? ' active' : ''}" data-id="${b.id}">
+      <div class="card-top">
+        <div class="board-icon" style="background:${b.iconBg}">${b.icon}</div>
+        <div class="board-info">
+          <div class="board-name">${b.name}</div>
+          <div class="board-mcu">${b.mcu}</div>
+        </div>
+        <span class="board-badge" style="background:${b.badgeBg};color:${b.badgeColor}">${b.badge}</span>
+      </div>
+      <div class="card-pins">${getCondition(b)}</div>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.board-card').forEach(el => {
+    el.addEventListener('click', () => selectBoard(el.dataset.id));
+  });
+}
+
+function syntaxHL(code) {
+  return code
+    .replace(/\/\/.*/g, m => `<span class="c">${m}</span>`)
+    .replace(/\b(void|const|int|float|bool|String|define|include|return|while|if|else|true|false|from|import|time)\b/g, '<span class="kw">$1</span>')
+    .replace(/\b(\d+\.?\d*)\b/g, '<span class="num">$1</span>')
+    .replace(/"([^"]*)"/g, '<span class="str">"$1"</span>')
+    .replace(/\b(Serial|analogRead|digitalRead|analogReadResolution|pinMode|map|printf|print|println|delay|time\.sleep|print)\b/g, '<span class="fn">$1</span>')
+    .replace(/\b(setup|loop|begin)\b/g, '<span class="def">$1</span>');
+}
+
+function selectBoard(id) {
+  const b = boards.find(x => x.id === id);
+  if (!b) return;
+
+  if (activeId === id) {
+    activeId = null;
+    document.getElementById('detail-panel').classList.remove('visible');
+    renderCards(getFiltered());
+    return;
+  }
+  activeId = id;
+  renderCards(getFiltered());
+
+  const panel = document.getElementById('detail-panel');
+  panel.className = 'visible';
+  panel.innerHTML = `
+    <div class="detail-header">
+      <div class="detail-title-group">
+        <div class="detail-icon" style="background:${b.iconBg};font-size:26px">${b.icon}</div>
+        <div>
+          <div class="detail-title">${b.name}</div>
+          <div class="detail-subtitle">${b.mcu} · ${b.vref} · ADC ${b.adc}</div>
+        </div>
+      </div>
+      <button class="close-btn" id="close-btn">✕ Close</button>
+    </div>
+
+    <div class="detail-body">
+      <div class="detail-section">
+        <div class="section-label">Wiring connections</div>
+        <table class="wiring-table">
+          <thead>
+            <tr>
+              <th>Wire</th>
+              <th>LDR Module</th>
+              <th></th>
+              <th>Board Pin</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="wire-dot wire-red"></span>Power</td>
+              <td class="ldr-cell">VCC</td>
+              <td class="arrow-cell">→</td>
+              <td class="pin-cell">${b.vcc}</td>
+              <td class="note-cell">Module supply</td>
+            </tr>
+            <tr>
+              <td><span class="wire-dot wire-black"></span>Ground</td>
+              <td class="ldr-cell">GND</td>
+              <td class="arrow-cell">→</td>
+              <td class="pin-cell">GND</td>
+              <td class="note-cell">Common ground</td>
+            </tr>
+            <tr>
+              <td><span class="wire-dot wire-blue"></span>Analog</td>
+              <td class="ldr-cell">AO</td>
+              <td class="arrow-cell">→</td>
+              <td class="pin-cell">${b.ao}</td>
+              <td class="note-cell">Analog read</td>
+            </tr>
+            <tr>
+              <td><span class="wire-dot wire-green"></span>Digital</td>
+              <td class="ldr-cell">DO</td>
+              <td class="arrow-cell">→</td>
+              <td class="pin-cell">${b.doPin}</td>
+              <td class="note-cell">Threshold out</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="note-box">${b.note}</div>
+
+        <div style="margin-top:1.25rem">
+          <div class="section-label">Board specs</div>
+          <div class="spec-grid">
+            ${Object.entries(b.specs).map(([k,v]) => `
+              <div class="spec-item">
+                <div class="spec-key">${k}</div>
+                <div class="spec-val">${v}</div>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <div class="section-label">Example code</div>
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">${b.id === 'rp2040' ? 'MICROPYTHON' : 'C / ARDUINO'}</span>
+            <button class="copy-btn" id="copy-btn">Copy</button>
+          </div>
+          <pre id="code-pre">${syntaxHL(b.code.replace(/</g,'&lt;').replace(/>/g,'&gt;'))}</pre>
+        </div>
+      </div>
+    </div>
+  `;
+
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  document.getElementById('close-btn').addEventListener('click', () => {
+    activeId = null;
+    panel.classList.remove('visible');
+    renderCards(getFiltered());
+  });
+
+  document.getElementById('copy-btn').addEventListener('click', () => {
+    navigator.clipboard.writeText(b.code).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+    });
+  });
+}
+
+function getFiltered() {
+  const q = document.getElementById('search').value.toLowerCase();
+  return boards.filter(b => {
+    const matchFilter = activeFilter === 'all' || b.category.includes(activeFilter);
+    const matchSearch = !q ||
+      b.name.toLowerCase().includes(q) ||
+      b.mcu.toLowerCase().includes(q) ||
+      b.badge.toLowerCase().includes(q);
+    return matchFilter && matchSearch;
+  });
+}
+
+document.getElementById('search').addEventListener('input', () => {
+  renderCards(getFiltered());
+});
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    renderCards(getFiltered());
+  });
+});
+
+renderCards(boards);
+</script>
+</body>
+</html>

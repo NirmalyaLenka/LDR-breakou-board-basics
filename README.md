@@ -16,8 +16,9 @@ Read **ambient light levels**, get a **light percentage**, classify **lighting c
 
 > Most LDR breakout boards have an onboard potentiometer to adjust the digital threshold and two outputs: **AO (Analog)** and **DO (Digital)**.
 
----
-
+--- <img width="408" height="306" alt="image" src="https://github.com/user-attachments/assets/c3b353e8-41d6-43f5-b6f8-75bc27d1c590" />  ESP32 Dev Board
+    <img width="1080" height="1080" alt="image" src="https://github.com/user-attachments/assets/64bb2646-e391-4c5c-8575-309e6fe8bbda" /> LDR Breakout / Module
+    
 ##  Wiring Diagram
 
 ```

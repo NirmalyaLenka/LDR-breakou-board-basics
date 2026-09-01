@@ -73,7 +73,7 @@ Open Serial Monitor at **115200 baud** to see live readings:
 =================================
 ADC Range   : 0 - 4095
 Voltage Ref : 3.3V
----------------------------------
+--------------------------------
 LDR initialized successfully!
 
 --- LDR Sensor Readings ---

@@ -1,5 +1,5 @@
 
- * LDR (Light Dependent Resistor) Breakout Board with E
+ * LDR (Light Dependent Resistor) Breakout Board with
  * Reads ambient light levels and classifies lighting conditions
  *
  * Wiring (Analog Module):

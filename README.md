@@ -3,7 +3,7 @@
 
 Read **ambient light levels**, get a **light percentage**, classify **lighting conditions**, and detect **darkness** using an LDR (Light Dependent Resistor) breakout module with an ESP32.
 
----
+----
 
 ##  Components Required
 

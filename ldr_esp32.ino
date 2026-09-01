@@ -1,5 +1,5 @@
 
- * LDR (Light Dependent Resistor) Breakout Board with ESP32
+ * LDR (Light Dependent Resistor) Breakout Board with ESP3
  * Reads ambient light levels and classifies lighting conditions
  *
  * Wiring (Analog Module):

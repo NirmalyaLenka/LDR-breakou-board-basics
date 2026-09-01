@@ -10,7 +10,7 @@
  *
  * Note: GPIO 34 and 35 are input-only pins on ESP32, perfect for analog reading.
  *
- * Required Library: None (uses built-in analog
+ * Required Library: None (uses built-in analo
  
 
 // Pin Definitions

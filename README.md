@@ -373,6 +373,16 @@ Pull requests are welcome! Feel free to open an issue for bugs or feature reques
 
 ---
 
+## Skills & technologies
+
+`Arduino/C++` · `HTML/CSS`
+
+
+## How it works
+
+The main firmware sketch is `ldr_esp32.ino`. Open it in Arduino IDE, verify the board, pin mapping and library requirements, then compile and upload. Test hardware behaviour on the real circuit before relying on it.
+
+
 ## Maintenance & Audit
 
 - **Audit date:** 10 November 2026

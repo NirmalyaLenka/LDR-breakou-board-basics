@@ -1,392 +1,112 @@
-# LDR-breakou-board-basics
-# ESP32 + LDR Breakout Board 
+# ESP32 LDR Breakout — Light-Level Monitor
 
-Read **ambient light levels**, get a **light percentage**, classify **lighting conditions**, and detect **darkness** using an LDR (Light Dependent Resistor) breakout module with an ESP32.
+An ESP32 learning project for reading the analog output of an LDR (light-dependent resistor) breakout and displaying an approximate light level, a coarse lighting category, and the module's digital comparator state in the Serial Monitor. The repository also includes offline HTML reference pages for board-specific wiring and code examples.
 
-----
+## What it does
 
-##  Components Required
+- Reads the module's analog output on ESP32 GPIO 34
+- Reads the digital comparator output on GPIO 35
+- Prints raw ADC count, approximate voltage, an estimated percentage, a lighting label, and a serial bar graph
+- Uses editable thresholds to classify readings as bright, normal, dim, or dark
 
-| Component | Quantity |
-|-----------|----------|
-| ESP32 Dev Board | 1 |
-| LDR Breakout / Module | 1 |
-| Jumper Wires | 4 |
-| Breadboard (optional) | 1 |
+**Important limitation:** An LDR module's analog-output polarity depends on its circuit. The current sketch assumes higher ADC values mean darker conditions and maps the percentage in reverse. Verify this with your own module before using the displayed percentage or labels as measurements. These values are relative indicators, not calibrated lux.
 
-> Most LDR breakout boards have an onboard potentiometer to adjust the digital threshold and two outputs: **AO (Analog)** and **DO (Digital)**.
+## Hardware and wiring
 
---- <img width="408" height="306" alt="image" src="https://github.com/user-attachments/assets/c3b353e8-41d6-43f5-b6f8-75bc27d1c590" />  ESP32 Dev Board
-    <img width="1080" height="1080" alt="image" src="https://github.com/user-attachments/assets/64bb2646-e391-4c5c-8575-309e6fe8bbda" /> LDR Breakout / Module
-    <img width="133" height="133" alt="image" src="https://github.com/user-attachments/assets/1b1c78be-212f-4b89-814f-39b0ed08feda" />  
-    Jumper Wires
-    
+| LDR breakout | ESP32 |
+| --- | --- |
+| VCC | 3.3 V |
+| GND | GND |
+| AO | GPIO 34 |
+| DO | GPIO 35 |
 
-##  Wiring Diagram
+GPIO 34 and GPIO 35 are input-only on the classic ESP32 and are suitable for these input signals. Power the module from **3.3 V** for this example so its outputs stay within ESP32 input limits. Do not power a module from 5 V unless you have confirmed its output voltages cannot exceed the ESP32's safe input range.
 
-```
-LDR Module      ESP32
-----------      -----
-VCC    ──────►  3.3V
-GND    ──────►  GND
-AO     ──────►  GPIO 34  (Analog reading)
-DO     ──────►  GPIO 35  (Digital threshold trigger)
-```
+The digital output's HIGH/LOW meaning depends on the module's comparator design and potentiometer setting. Confirm its polarity rather than assuming HIGH always means dark.
 
->  GPIO 34 and 35 are **input-only** pins on the ESP32 — perfect for analog and digital reading.  
->  Use **3.3V** power. Some LDR modules also support 5V, but keep the signal pins at 3.3V logic for ESP32.
+## Bill of materials
 
----
+| Item | Quantity | Notes |
+| --- | ---: | --- |
+| ESP32 development board | 1 | Classic ESP32 pin mapping is used by the sketch |
+| LDR breakout module | 1 | Prefer a module that works at 3.3 V |
+| Jumper wires | 4 | VCC, GND, AO, DO |
+| USB data cable | 1 | Upload and Serial Monitor |
+| Breadboard | 1, optional | For prototyping |
 
-##  Setup & Installation
+This BOM matches the current ESP32 example. The multi-board HTML reference includes other targets, whose voltage requirements and pin mappings must be checked individually.
 
-### 1. Install Arduino IDE
-Download from [arduino.cc](https://www.arduino.cc/en/software)
+## Software setup
 
-### 2. Add ESP32 Board Support
-1. Open **Arduino IDE** → **File** → **Preferences**
-2. Add this URL to *Additional Boards Manager URLs*:
-   ```
-   https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
-   ```
-3. Go to **Tools** → **Board** → **Boards Manager**
-4. Search for `esp32` and click **Install**
+1. Install the [Arduino IDE](https://www.arduino.cc/en/software).
+2. Install ESP32 board support using Espressif's package URL:
+   `https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json`
+3. Open `ldr_esp32.ino`.
+4. Select the appropriate ESP32 board and serial port.
+5. Compile and upload, then open Serial Monitor at **115200 baud**.
 
-### 3. No Extra Libraries Needed! 
-This project uses only the **built-in** `analogRead()` and `digitalRead()` functions — no additional libraries required.
-
-### 4. Upload the Sketch
-1. Open `ldr_esp32.ino` in Arduino IDE
-2. Select your board: **Tools** → **Board** → **ESP32 Dev Module**
-3. Select the correct **Port** under **Tools** → **Port**
-4. Click **Upload** 
-
----
-
-##  Serial Monitor Output
-
-Open Serial Monitor at **115200 baud** to see live readings:
-
-```
-=================================
-   ESP32 + LDR Breakout Demo     
-=================================
-ADC Range   : 0 - 4095
-Voltage Ref : 3.3V
---------------------------------
-LDR initialized successfully!
-
---- LDR Sensor Readings ---
-Raw ADC     : 512 / 4095
-Voltage     : 0.413 V
-Light Level : 87 %
-Condition   : BRIGHT (Direct Light / Sunlight)
-Digital Out : BRIGHT (below threshold)
-Light Bar   : [████████░░] 87%
----------------------------
-```
-# 💡 LDR Breakout Board — Multi-Platform Wiring & Code Reference
-
-> **⚠️ IMPORTANT FOR ALL USERS — READ BEFORE CONNECTING ANYTHING**
->
-> This library supports **15 development boards**. Before you wire your LDR module
-> or upload any sketch, please visit the official reference website to get the
-> **correct wiring diagram and verified code** for your specific board.
->
-> Skipping this step and guessing pin numbers is the #1 cause of burnt ADC pins,
-> incorrect readings, and damaged boards.
-
----
-
-## 🌐 Official Reference Website
-
-### 👉 [Open Wiring Guide → `index.html`](./index.html)
-### 👉 [Browse All Codes → `codes.html`](./codes.html)
-
-Open these HTML files in any browser — **no internet connection required.**
-
-| Page | What you get |
-|---|---|
-| `index.html` | Interactive board selector · Wiring table · Pin labels · Board specs |
-| `codes.html` | Full sketches for all 15 boards · Syntax highlighted · Copy & Download buttons |
-
----
-
-## ⚠️ Why the Website Reference Matters
-
-Every board in this library has **different rules**:
-
-| Risk | Example boards affected |
-|---|---|
-| **Wrong voltage will destroy your board** | Arduino Due, STM32 Blue Pill, Teensy 4.0, MKR WiFi — all 3.3V ONLY, not 5V tolerant |
-| **Wrong analog pin will give no reading** | ESP8266 has only 1 analog pin (A0), max 1.0V input |
-| **ADC resolution varies — thresholds differ** | Uno/Nano = 10-bit (0–1023) · ESP32/Pico = 12-bit (0–4095) · Portenta H7 = 16-bit (0–65535) |
-| **Strapping pins cause boot failures** | ESP32-C3: avoid GPIO 5 at boot; ESP32: avoid GPIO 0/2/15 |
-| **ADC2 conflicts with Wi-Fi** | ESP32 / ESP32-S3: use ADC1 pins only when radio is active |
-| **No hardware Serial on tiny boards** | ATtiny85/Digispark: USB HID only — no standard Serial.println() |
-
-**The website shows all of this per board, with the correct pin numbers and warnings highlighted in orange.**
-
----
-
-## 🔌 LDR Module Pins (Quick Reference)
-
-All boards in this project use the standard 4-pin LDR breakout module:
-
-```
-LDR Module          →   Your Board
-──────────────────────────────────────────
-VCC                 →   3.3V or 5V  (check your board!)
-GND                 →   GND
-AO  (Analog Out)    →   ADC-capable pin  (check website for which one)
-DO  (Digital Out)   →   Any digital input pin
-```
-
-> **Never assume the pin number.** Open `index.html`, click your board, and read
-> the wiring table. It takes 30 seconds and saves you from irreversible damage.
-
----
-
-## 🗂️ Files in This Project
-
-```
-📁 project/
-├── 📄 README.md            ← You are here
-├── 🌐 index.html           ← Interactive wiring guide (open in browser)
-├── 🌐 codes.html           ← All 15 board sketches (open in browser)
-└── 📁 sketches/            ← Individual .ino / .py files (optional)
-    ├── esp32_ldr.ino
-    ├── uno_ldr.ino
-    ├── nano_ldr.ino
-    ├── mega_ldr.ino
-    ├── esp8266_ldr.ino
-    ├── pico_ldr.py          ← MicroPython
-    ├── stm32_bluepill_ldr.ino
-    ├── due_ldr.ino
-    ├── esp32s3_ldr.ino
-    ├── teensy40_ldr.ino
-    ├── mkr_wifi_ldr.ino
-    ├── attiny85_ldr.ino
-    ├── portenta_h7_ldr.ino
-    ├── micro_ldr.ino
-    └── esp32c3_ldr.ino
-```
-
----
-
-## 🛒 Supported Boards at a Glance
-
-| # | Board | MCU | Voltage | ADC |
-|---|---|---|---|---|
-| 1 | ESP32 DevKit V1 | Xtensa LX6 240 MHz | 3.3V | 12-bit |
-| 2 | Arduino Uno R3 | ATmega328P 16 MHz | 5V | 10-bit |
-| 3 | Arduino Nano | ATmega328P 16 MHz | 5V | 10-bit |
-| 4 | Arduino Mega 2560 | ATmega2560 16 MHz | 5V | 10-bit |
-| 5 | NodeMCU ESP8266 | Xtensa L106 80 MHz | 3.3V | 10-bit (1 ch) |
-| 6 | Raspberry Pi Pico | RP2040 Dual M0+ 133 MHz | 3.3V | 12-bit |
-| 7 | STM32 Blue Pill | STM32F103C8 72 MHz | 3.3V | 12-bit |
-| 8 | Arduino Due | AT91SAM3X8E 84 MHz | **3.3V ONLY** | 12-bit |
-| 9 | ESP32-S3 | Xtensa LX7 240 MHz | 3.3V | 12-bit |
-| 10 | Teensy 4.0 | ARM Cortex-M7 600 MHz | 3.3V | 10/12-bit |
-| 11 | Arduino MKR WiFi 1010 | SAMD21 M0+ 48 MHz | 3.3V | 12-bit |
-| 12 | ATtiny85 / Digispark | ATtiny85 16.5 MHz | 5V | 10-bit |
-| 13 | Arduino Portenta H7 | STM32H747 Dual 480 MHz | 3.3V | **16-bit** |
-| 14 | Arduino Micro | ATmega32U4 16 MHz | 5V | 10-bit |
-| 15 | ESP32-C3 SuperMini | RISC-V 160 MHz | 3.3V | 12-bit |
-
----
-
-## 🚦 Light Level Classification
-
-All sketches use this 4-zone classification (thresholds are for 12-bit ADC; see code for 10-bit and 16-bit equivalents):
-
-```
-ADC Value (12-bit)    Classification
-──────────────────────────────────────────────────
-0    – 799            BRIGHT  (direct sunlight / lamp)
-800  – 1999           NORMAL  (indoor ambient)
-2000 – 2999           DIM     (evening / shade)
-3000 – 4095           DARK    (night / covered)
-```
-
-> Note: Most LDR modules output **higher voltage when darker** (resistor divider logic).
-> The code inverts this: `lightPercent = map(raw, 0, 4095, 100, 0)` so 100% = full brightness.
-
----
-
-## 📋 How to Use This Project
-
-```
-Step 1 → Open index.html in your browser
-Step 2 → Click your board from the grid
-Step 3 → Read the wiring table — connect VCC, GND, AO, DO
-Step 4 → Open codes.html, find your board, click Copy or Download
-Step 5 → Open Arduino IDE (or Thonny for Pico), paste the code
-Step 6 → Select the correct board and COM port, then upload
-Step 7 → Open Serial Monitor at the baud rate shown in the code
-```
-
----
-
-## 🔧 Required Libraries
-
-| Board | Library needed | Install via |
-|---|---|---|
-| All Arduino boards | None (built-in `analogRead`) | — |
-| Raspberry Pi Pico | `machine` (built-in MicroPython) | — |
-| ATtiny85 / Digispark | `DigiUSB` | Digistump board package |
-| STM32 Blue Pill | STM32duino core | Arduino Board Manager |
-| Teensy 4.0 | Teensyduino add-on | [pjrc.com/teensy/td_download.html](https://www.pjrc.com/teensy/td_download.html) |
-
----
-
-## 🐛 Troubleshooting
-
-**Serial Monitor shows nothing / garbled text**
-→ Check baud rate matches the code (`115200` for most, `9600` for Uno/Nano/Mega)
-
-**ADC always reads 0 or 4095**
-→ Wrong analog pin selected — open `index.html` and verify the AO pin for your board
-
-**Board crashes or won't boot after connecting**
-→ You may have connected to a strapping pin — check the warning box in `index.html`
-
-**ESP8266 A0 always reads very low**
-→ Normal — A0 has an internal divider; maximum input voltage at the pin is 1.0V
-
-**`while (!Serial)` hangs forever**
-→ Only affects USB-CDC boards (Micro, Portenta, Leonardo). Open Serial Monitor in IDE.
-
-**Raspberry Pi Pico — no output**
-→ Use Thonny IDE with MicroPython firmware flashed. REPL must be active.
-
----
-
-## ⚖️ License
-
-All code in this project is released under the **MIT License** — free to use,
-modify, and distribute in personal and commercial projects.
-
----
-
-*Generated reference for LDR Breakout Module · 15 Development Boards · Analog + Digital output*
----
+No extra Arduino library is required for the main sketch; it uses `analogRead()`, `digitalRead()`, and standard Arduino functions.
 
 ## Configuration
 
-### Adjust Light Level Thresholds
-Modify these values in the code to match your environment:
+The main sketch uses these defaults:
 
 ```cpp
-#define THRESHOLD_BRIGHT    800   // Below this = Bright
-#define THRESHOLD_NORMAL   2000   // Below this = Normal
-#define THRESHOLD_DIM      3000   // Below this = Dim
-                                  // Above 3000  = Dark
+#define LDR_ANALOG_PIN   34
+#define LDR_DIGITAL_PIN  35
+#define THRESHOLD_BRIGHT 800
+#define THRESHOLD_NORMAL 2000
+#define THRESHOLD_DIM    3000
 ```
 
-> Higher raw ADC value = darker environment (for most LDR modules).
+These thresholds assume a 12-bit ADC reading from 0 to 4095 and a module whose ADC value rises as the environment gets darker. Tune them from readings in your actual environment. The voltage conversion uses a simplified 3.3 V scale; ESP32 ADC behavior is not a precision voltmeter and can vary with attenuation, chip, and board.
 
-### Adjust Digital Threshold
-Rotate the **onboard potentiometer** on your LDR module to set the sensitivity point where the **DO pin** switches from HIGH to LOW.
+## Offline reference pages
 
----
+Open these files directly in a browser; they are intended to work locally without a server:
 
-##  Features
+- [Interactive board wiring guide](./index.html) — board selector and pin guidance
+- [Code reference](./codes.html) — board-specific example snippets
+- [LDR datasheet/reference PDF](./LDR%20Datasheet.pdf)
 
-| Feature | Description |
-|---------|-------------|
-| Raw ADC Value | 12-bit reading from 0 to 4095 |
-| Voltage Output | Converted voltage from ADC reading |
-| Light Percentage | 0% = fully dark, 100% = fully bright |
-| Condition Label | Bright / Normal / Dim / Dark |
-| Digital Detection | Module comparator output via DO pin |
-| Visual Light Bar | ASCII bar graph in Serial Monitor |
+The HTML pages contain examples for multiple boards. Treat them as reference material, not proof that every included snippet has been compiled or tested. Confirm the voltage limits, ADC resolution, pin availability, and board-core requirements for the exact target before wiring or uploading.
 
----
+## Repository structure
 
-# Light Condition Reference
-
-| Condition | Raw ADC Range | Description |
-|-----------|---------------|-------------|
-| BRIGHT | 0 – 800 | Direct sunlight or strong light |
-| NORMAL | 801 – 2000 | Indoor ambient / office lighting |
-| DIM | 2001 – 3000 | Evening light / low lamp |
-| DARK | 3001 – 4095 | Night / no light source |
-
----
-
-##  Troubleshooting
-
-| Problem | Solution |
-|--------|----------|
-| Always reads 0 or 4095 | Check AO pin is connected to GPIO 34 |
-| DO pin never changes | Adjust the onboard potentiometer |
-| Readings unstable | Add a 100nF capacitor between VCC and GND near module |
-| Board not detected | Install CP210x or CH340 USB driver |
-| Wrong light % values | Adjust threshold constants in the code |
-
----
-
-##  Project Structure
-
-```
-esp32-ldr/
-│
-├── ldr_esp32.ino   # Main Arduino sketch
-└── README.md       # This file
+```text
+LDR-breakou-board-basics/
+├── LDR Datasheet.pdf   # Sensor/module reference document
+├── README.md           # Setup, wiring, BOM, limitations, and maintenance
+├── codes.html          # Offline multi-board code reference
+├── index.html          # Offline interactive wiring guide
+└── ldr_esp32.ino       # Main ESP32 firmware sketch
 ```
 
----
+## Troubleshooting
 
-## Project Ideas
+| Symptom | Check |
+| --- | --- |
+| ADC stays at 0 or 4095 | Check AO wiring and verify the selected GPIO is ADC-capable |
+| Percentage seems inverted | Confirm whether your module's AO rises in light or darkness; adjust mapping accordingly |
+| DO never changes | Adjust the module potentiometer and verify the comparator output polarity |
+| ESP32 resets or pin gets hot | Disconnect power and check for 5 V signals reaching ESP32 GPIO |
+| Readings jump around | Check ground/wiring and average multiple samples if needed |
 
-- Automatic street light (turn LED on when dark)
-- Auto screen brightness controller
--  Plant light monitor — alert when plant needs more sun
--  Day/night cycle detector for IoT systems
--  Flashlight or torch detector
--  Smart home ambient light sensor
+## Potential extensions
 
----
+- Calibrate the mapping against a known light meter if approximate lux is required
+- Add sampling averaging or a small moving average filter
+- Add a configurable threshold interface
+- Use a transistor/MOSFET driver for a lamp or relay rather than powering a load from a GPIO
 
-##  Resources
+## Skills and technologies
 
-- [ESP32 ADC Reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/adc.html)
-- [Arduino analogRead()](https://www.arduino.cc/reference/en/language/functions/analog-io/analogread/)
-- [LDR / Photoresistor Basics](https://en.wikipedia.org/wiki/Photoresistor)
+`ESP32` · `Arduino C++` · `ADC` · `GPIO` · `Sensor interfacing` · `HTML/CSS/JavaScript`
 
----
+## Maintenance & audit
 
-##  License
-
-This project is open source and available under the [MIT License](LICENSE).
-
----
-
-##  Contributing
-
-Pull requests are welcome! Feel free to open an issue for bugs or feature requests.
-
----
-
-
-
----
-
-## Skills & technologies
-
-`Arduino/C++` · `HTML/CSS`
-
-
-## How it works
-
-The main firmware sketch is `ldr_esp32.ino`. Open it in Arduino IDE, verify the board, pin mapping and library requirements, then compile and upload. Test hardware behaviour on the real circuit before relying on it.
-
-
-## Maintenance & Audit
-
-- **Audit date:** 10 November 2026
-- **Documentation status:** README reviewed and audit record added on this date.
-- **Scope and evidence:** This entry records a documentation-level maintenance pass. It does not by itself establish that source code compiles, dependencies are current, security has been tested, or hardware/runtime behavior has been verified.
-- **Code and tests:** No new functional code changes or test results are claimed by this README update. Run the project-specific build, test, and hardware/runtime checks before relying on it.
-- **Maintenance baseline:** Documentation status recorded through 10 November 2026; revisit dependencies, setup instructions, known limitations, and tests whenever the project changes.
+- **Last updated:** 10 November 2026
+- **Review scope:** Compared the README with the tracked sketch, HTML reference pages, PDF, and root file list.
+- **Documentation changes:** Consolidated duplicated sections, updated the BOM and paths, and clarified ADC scaling, signal polarity, and 3.3 V input safety.
+- **Firmware status:** No firmware change was made because the light-level mapping depends on the exact breakout circuit and has not been validated on hardware. No compile or physical test was run.
+- **License:** No `LICENSE` file was found in the root listing; no specific reuse license is claimed here.

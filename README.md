@@ -110,3 +110,9 @@ LDR-breakou-board-basics/
 - **Documentation changes:** Consolidated duplicated sections, updated the BOM and paths, and clarified ADC scaling, signal polarity, and 3.3 V input safety.
 - **Firmware status:** No firmware change was made because the light-level mapping depends on the exact breakout circuit and has not been validated on hardware. No compile or physical test was run.
 - **License:** No `LICENSE` file was found in the root listing; no specific reuse license is claimed here.
+
+## Contact
+
+Maintained up to 25 November 2026.
+
+If you encounter any problems, please contact [carmodbhai@gmail.com](mailto:carmodbhai@gmail.com).
